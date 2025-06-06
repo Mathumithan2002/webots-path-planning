@@ -1,0 +1,151 @@
+#VRML_SIM R2025a utf8
+# robot.proto
+
+PROTO MyProto [
+  field SFFloat            camera_fieldOfView           0.84                     # Is `Camera.fieldOfView`.
+  field SFInt32            camera_width                 52                       # Is `Camera.width`.
+  field SFInt32            camera_height                39                       # Is `Camera.height`.
+  field SFBool             camera_antiAliasing          FALSE                    # Is `Camera.antiAliasing`.
+  field SFRotation         camera_rotation              0 0 1 -1.57                 # Is `Camera.rotation`. Interesting setup: set `0 1 0 0.47` in order to simulate the linear camera mode.
+  field SFFloat            camera_noise                 0.0                      # Is `Camera.noise`.
+  field SFFloat            camera_motionBlur            0.0 
+  field SFString            name             "rover"
+]
+{
+  Robot {
+    name IS name
+    translation -0.2 -0.528 0
+    rotation 0 0 1 1.57
+    children [
+      InertialUnit {
+        name "imu"
+      }
+      Gyro {
+        name "gyro_sensor"
+      }
+      Accelerometer {
+        name "accel_sensor"
+      }
+      Transform {
+        translation 0 0 0.028
+        rotation IS camera_rotation
+        children [
+          Camera {
+            name "camera"
+            fieldOfView IS camera_fieldOfView
+            width IS camera_width
+            height IS camera_height
+            near 0.0055
+            antiAliasing IS camera_antiAliasing
+            motionBlur IS camera_motionBlur
+            noise IS camera_noise
+      zoom Zoom {
+      }
+          }
+        ]
+      }
+      DEF body Transform {
+        translation 0 0 0.0415
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor 0 0 1
+              roughness 1
+              metalness 0
+            }
+            geometry Cylinder {
+              height 0.08
+              radius 0.045
+            }
+          }
+        ]
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          position 14.809636955439288
+          anchor 0.045 0 0.025
+        }
+        device [
+          RotationalMotor {
+            name "left wheel motor"
+          }
+          PositionSensor {
+            name "encoder_1"
+          }
+        ]
+        endPoint Solid {
+          translation 0.045 0 0.025
+          rotation 0.6695916733809867 0.3225019141808173 0.6690586717833937 2.5171856395186225
+          children [
+            DEF wheel Shape {
+              appearance PBRAppearance {
+                baseColor 1 0 0
+                roughness 1
+                metalness 0
+              }
+              geometry Cylinder {
+                height 0.01
+                radius 0.025
+              }
+            }
+          ]
+          boundingObject USE wheel
+          physics DEF wheel_physics Physics {
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          position 37.23808496491429
+          anchor -0.045 0 0.025
+        }
+        device [
+          RotationalMotor {
+            name "right wheel motor"
+          }
+          PositionSensor {
+            name "encoder_2"
+          }
+        ]
+        endPoint Solid {
+          translation -0.045 0 0.025
+          rotation -0.22290632583766148 0.949054588194654 -0.22272889019664627 1.6222662198297526
+          children [
+            USE wheel
+          ]
+          name "solid(1)"
+          boundingObject USE wheel
+          physics USE wheel_physics
+        }
+      }
+      Solid {
+        translation 0.015 -0.045 0.07
+        children [
+          DEF eye Shape {
+            appearance PBRAppearance {
+              baseColor 1 0 0
+              roughness 1
+              metalness 0
+            }
+            geometry Box {
+              size 0.005 0.005 0.005
+            }
+          }
+        ]
+        name "solid(2)"
+      }
+      Solid {
+        translation -0.015 -0.045 0.07
+        children [
+          USE eye
+        ]
+        name "solid(3)"
+      }
+    ]
+    boundingObject USE body
+    physics Physics {
+    }
+    controller "my_controller"
+    supervisor TRUE
+  }
+}
